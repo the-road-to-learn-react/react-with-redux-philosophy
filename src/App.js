@@ -51,22 +51,26 @@ const App = () => {
   const [state, dispatch] = useReducer(todoReducer, todos);
 
   return (
-    <TodoContext.Provider value={dispatch}>
-      <TodoList todos={state} />
+    <TodoContext.Provider value={{ state, dispatch }}>
+      <TodoList />
     </TodoContext.Provider>
   );
 };
 
-const TodoList = ({ todos }) => (
-  <ul>
-    {todos.map(todo => (
-      <TodoItem key={todo.id} todo={todo} />
-    ))}
-  </ul>
-);
+const TodoList = () => {
+  const { state } = useContext(TodoContext);
+
+  return (
+    <ul>
+      {state.map(todo => (
+        <TodoItem key={todo.id} todo={todo} />
+      ))}
+    </ul>
+  );
+};
 
 const TodoItem = ({ todo }) => {
-  const dispatch = useContext(TodoContext);
+  const { dispatch } = useContext(TodoContext);
 
   return (
     <li>
