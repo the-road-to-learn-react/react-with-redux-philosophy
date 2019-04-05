@@ -1,4 +1,6 @@
-import React, { useReducer } from 'react';
+import React, { useReducer, useContext, createContext } from 'react';
+
+const TodoContext = createContext(null);
 
 const todos = [
   {
@@ -22,7 +24,7 @@ const todos = [
   },
 ];
 
-const reducer = (state, action) => {
+const todoReducer = (state, action) => {
   switch (action.type) {
     case 'DO_TODO':
       return state.map(todo => {
@@ -46,39 +48,43 @@ const reducer = (state, action) => {
 };
 
 const App = () => {
-  const [state, dispatch] = useReducer(reducer, todos);
+  const [state, dispatch] = useReducer(todoReducer, todos);
 
   return (
-    <div>
-      <TodoList todos={state} dispatch={dispatch} />
-    </div>
+    <TodoContext.Provider value={dispatch}>
+      <TodoList todos={state} />
+    </TodoContext.Provider>
   );
 };
 
-const TodoList = ({ todos, dispatch }) => (
+const TodoList = ({ todos }) => (
   <ul>
     {todos.map(todo => (
-      <TodoItem key={todo.id} todo={todo} dispatch={dispatch} />
+      <TodoItem key={todo.id} todo={todo} />
     ))}
   </ul>
 );
 
-const TodoItem = ({ todo, dispatch }) => (
-  <li>
-    <label>
-      <input
-        type="checkbox"
-        checked={todo.completed}
-        onChange={() =>
-          dispatch({
-            type: todo.completed ? 'UNDO_TODO' : 'DO_TODO',
-            id: todo.id,
-          })
-        }
-      />
-      {todo.task}
-    </label>
-  </li>
-);
+const TodoItem = ({ todo }) => {
+  const dispatch = useContext(TodoContext);
+
+  return (
+    <li>
+      <label>
+        <input
+          type="checkbox"
+          checked={todo.completed}
+          onChange={() =>
+            dispatch({
+              type: todo.completed ? 'UNDO_TODO' : 'DO_TODO',
+              id: todo.id,
+            })
+          }
+        />
+        {todo.task}
+      </label>
+    </li>
+  );
+};
 
 export default App;
