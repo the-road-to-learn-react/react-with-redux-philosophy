@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useReducer } from 'react';
 
 const todos = [
   {
@@ -22,23 +22,55 @@ const todos = [
   },
 ];
 
-const App = () => (
-  <div>
-    <ul>
-      {todos.map(todo => (
-        <li key={todo.id}>
-          <label>
-            <input
-              type="checkbox"
-              checked={todo.completed}
-              onChange={() => {}}
-            />
-            {todo.task}
-          </label>
-        </li>
-      ))}
-    </ul>
-  </div>
-);
+const reducer = (state, action) => {
+  switch (action.type) {
+    case 'DO_TODO':
+      return state.map(todo => {
+        if (todo.id === action.id) {
+          return { ...todo, completed: true };
+        } else {
+          return todo;
+        }
+      });
+    case 'UNDO_TODO':
+      return state.map(todo => {
+        if (todo.id === action.id) {
+          return { ...todo, completed: false };
+        } else {
+          return todo;
+        }
+      });
+    default:
+      throw new Error();
+  }
+};
+
+const App = () => {
+  const [state, dispatch] = useReducer(reducer, todos);
+
+  return (
+    <div>
+      <ul>
+        {state.map(todo => (
+          <li key={todo.id}>
+            <label>
+              <input
+                type="checkbox"
+                checked={todo.completed}
+                onChange={() =>
+                  dispatch({
+                    type: todo.completed ? 'UNDO_TODO' : 'DO_TODO',
+                    id: todo.id,
+                  })
+                }
+              />
+              {todo.task}
+            </label>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
 
 export default App;
