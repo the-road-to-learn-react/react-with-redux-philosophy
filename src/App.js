@@ -50,27 +50,35 @@ const App = () => {
 
   return (
     <div>
-      <ul>
-        {state.map(todo => (
-          <li key={todo.id}>
-            <label>
-              <input
-                type="checkbox"
-                checked={todo.completed}
-                onChange={() =>
-                  dispatch({
-                    type: todo.completed ? 'UNDO_TODO' : 'DO_TODO',
-                    id: todo.id,
-                  })
-                }
-              />
-              {todo.task}
-            </label>
-          </li>
-        ))}
-      </ul>
+      <TodoList todos={state} dispatch={dispatch} />
     </div>
   );
 };
+
+const TodoList = ({ todos, dispatch }) => (
+  <ul>
+    {todos.map(todo => (
+      <TodoItem key={todo.id} todo={todo} dispatch={dispatch} />
+    ))}
+  </ul>
+);
+
+const TodoItem = ({ todo, dispatch }) => (
+  <li>
+    <label>
+      <input
+        type="checkbox"
+        checked={todo.completed}
+        onChange={() =>
+          dispatch({
+            type: todo.completed ? 'UNDO_TODO' : 'DO_TODO',
+            id: todo.id,
+          })
+        }
+      />
+      {todo.task}
+    </label>
+  </li>
+);
 
 export default App;
