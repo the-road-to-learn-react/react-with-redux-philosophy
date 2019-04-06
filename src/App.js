@@ -1,4 +1,11 @@
-import React, { useReducer, useContext, createContext } from 'react';
+import React, {
+  useState,
+  useReducer,
+  useContext,
+  createContext,
+} from 'react';
+
+import uuid from 'uuid/v4';
 
 const TodoContext = createContext(null);
 const FilterContext = createContext(null);
@@ -8,20 +15,16 @@ const initalTodos = [
     id: 'a',
     task: 'Learn React',
     complete: true,
-    url: 'https://www.robinwieruch.de/the-road-to-learn-react/',
   },
   {
     id: 'b',
     task: 'Learn Firebase',
     complete: true,
-    url:
-      'https://www.robinwieruch.de/the-road-to-react-with-firebase-book/',
   },
   {
     id: 'c',
     task: 'Learn GraphQL',
     complete: false,
-    url: 'https://www.robinwieruch.de/the-road-to-graphql-book/',
   },
 ];
 
@@ -42,6 +45,12 @@ const todoReducer = (state, action) => {
         } else {
           return todo;
         }
+      });
+    case 'ADD_TODO':
+      return state.concat({
+        task: action.task,
+        id: uuid(),
+        complete: false,
       });
     default:
       throw new Error();
@@ -88,8 +97,34 @@ const App = () => {
       <FilterContext.Provider value={filterDispatch}>
         <Filter />
         <TodoList />
+        <AddTodo />
       </FilterContext.Provider>
     </TodoContext.Provider>
+  );
+};
+
+const AddTodo = () => {
+  const [task, setTask] = useState('');
+
+  const { todosDispatch } = useContext(TodoContext);
+
+  const handleSubmit = event => {
+    if (task) {
+      todosDispatch({ type: 'ADD_TODO', task });
+    }
+
+    setTask('');
+
+    event.preventDefault();
+  };
+
+  const handleChange = event => setTask(event.target.value);
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input type="text" value={task} onChange={handleChange} />
+      <button type="submit">Add Todo</button>
+    </form>
   );
 };
 
@@ -124,7 +159,6 @@ const TodoItem = ({ todo }) => {
         />
         {todo.task}
       </label>
-      <a href={todo.url}>(Link)</a>
     </li>
   );
 };
