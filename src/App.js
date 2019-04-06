@@ -7,8 +7,7 @@ import React, {
 
 import uuid from 'uuid/v4';
 
-const TodoContext = createContext(null);
-const FilterContext = createContext(null);
+const DispatchContext = createContext(null);
 
 const initalTodos = [
   {
@@ -53,7 +52,7 @@ const todoReducer = (state, action) => {
         complete: false,
       });
     default:
-      throw new Error();
+      return state;
   }
 };
 
@@ -66,13 +65,17 @@ const filterReducer = (state, action) => {
     case 'SHOW_INCOMPLETE':
       return 'INCOMPLETE';
     default:
-      throw new Error();
+      return state;
   }
 };
 
 const App = () => {
-  const [filter, filterDispatch] = useReducer(filterReducer, 'ALL');
   const [todos, todosDispatch] = useReducer(todoReducer, initalTodos);
+  const [filter, filterDispatch] = useReducer(filterReducer, 'ALL');
+
+  // Global Dispatch Function
+  const dispatch = action =>
+    [todosDispatch, filterDispatch].forEach(fn => fn(action));
 
   const filteredTodos = todos.filter(todo => {
     if (filter === 'ALL') {
@@ -91,26 +94,22 @@ const App = () => {
   });
 
   return (
-    <TodoContext.Provider
-      value={{ todos: filteredTodos, todosDispatch }}
-    >
-      <FilterContext.Provider value={filterDispatch}>
-        <Filter />
-        <TodoList />
-        <AddTodo />
-      </FilterContext.Provider>
-    </TodoContext.Provider>
+    <DispatchContext.Provider value={dispatch}>
+      <Filter />
+      <TodoList todos={filteredTodos} />
+      <AddTodo />
+    </DispatchContext.Provider>
   );
 };
 
 const AddTodo = () => {
   const [task, setTask] = useState('');
 
-  const { todosDispatch } = useContext(TodoContext);
+  const dispatch = useContext(DispatchContext);
 
   const handleSubmit = event => {
     if (task) {
-      todosDispatch({ type: 'ADD_TODO', task });
+      dispatch({ type: 'ADD_TODO', task });
     }
 
     setTask('');
@@ -128,23 +127,19 @@ const AddTodo = () => {
   );
 };
 
-const TodoList = () => {
-  const { todos } = useContext(TodoContext);
-
-  return (
-    <ul>
-      {todos.map(todo => (
-        <TodoItem key={todo.id} todo={todo} />
-      ))}
-    </ul>
-  );
-};
+const TodoList = ({ todos }) => (
+  <ul>
+    {todos.map(todo => (
+      <TodoItem key={todo.id} todo={todo} />
+    ))}
+  </ul>
+);
 
 const TodoItem = ({ todo }) => {
-  const { todosDispatch } = useContext(TodoContext);
+  const dispatch = useContext(DispatchContext);
 
   const handleChange = () =>
-    todosDispatch({
+    dispatch({
       type: todo.complete ? 'UNDO_TODO' : 'DO_TODO',
       id: todo.id,
     });
@@ -164,18 +159,18 @@ const TodoItem = ({ todo }) => {
 };
 
 const Filter = () => {
-  const filterDispatch = useContext(FilterContext);
+  const dispatch = useContext(DispatchContext);
 
   const handleShowAll = () => {
-    filterDispatch({ type: 'SHOW_ALL' });
+    dispatch({ type: 'SHOW_ALL' });
   };
 
   const handleShowComplete = () => {
-    filterDispatch({ type: 'SHOW_COMPLETE' });
+    dispatch({ type: 'SHOW_COMPLETE' });
   };
 
   const handleShowIncomplete = () => {
-    filterDispatch({ type: 'SHOW_INCOMPLETE' });
+    dispatch({ type: 'SHOW_INCOMPLETE' });
   };
 
   return (
