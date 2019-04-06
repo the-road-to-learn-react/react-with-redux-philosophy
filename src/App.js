@@ -23,6 +23,18 @@ const App = () => {
   const [todos, setTodos] = useState(initalTodos);
   const [task, setTask] = useState('');
 
+  const handleChangeCheckbox = id => {
+    setTodos(
+      todos.map(todo => {
+        if (todo.id === id) {
+          return { ...todo, complete: !todo.complete };
+        } else {
+          return todo;
+        }
+      })
+    );
+  };
+
   const handleChangeInput = event => {
     setTask(event.target.value);
   };
@@ -42,7 +54,14 @@ const App = () => {
       <ul>
         {todos.map(todo => (
           <li key={todo.id}>
-            <label>{todo.task}</label>
+            <label>
+              <input
+                type="checkbox"
+                checked={todo.complete}
+                onChange={() => handleChangeCheckbox(todo.id)}
+              />
+              {todo.task}
+            </label>
           </li>
         ))}
       </ul>
