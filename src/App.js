@@ -6,7 +6,7 @@ import React, {
 } from 'react';
 import uuid from 'uuid/v4';
 
-const TodoContext = createContext(null);
+const DispatchContext = createContext(null);
 
 const initalTodos = [
   {
@@ -35,7 +35,7 @@ const filterReducer = (state, action) => {
     case 'SHOW_INCOMPLETE':
       return 'INCOMPLETE';
     default:
-      throw new Error();
+      return state;
   }
 };
 
@@ -64,13 +64,17 @@ const todoReducer = (state, action) => {
         complete: false,
       });
     default:
-      throw new Error();
+      return state;
   }
 };
 
 const App = () => {
   const [filter, dispatchFilter] = useReducer(filterReducer, 'ALL');
   const [todos, dispatchTodos] = useReducer(todoReducer, initalTodos);
+
+  // Global Dispatch Function
+  const dispatch = action =>
+    [dispatchTodos, dispatchFilter].forEach(fn => fn(action));
 
   const filteredTodos = todos.filter(todo => {
     if (filter === 'ALL') {
@@ -89,15 +93,17 @@ const App = () => {
   });
 
   return (
-    <TodoContext.Provider value={dispatchTodos}>
-      <Filter dispatch={dispatchFilter} />
+    <DispatchContext.Provider value={dispatch}>
+      <Filter />
       <TodoList todos={filteredTodos} />
       <AddTodo />
-    </TodoContext.Provider>
+    </DispatchContext.Provider>
   );
 };
 
-const Filter = ({ dispatch }) => {
+const Filter = () => {
+  const dispatch = useContext(DispatchContext);
+
   const handleShowAll = () => {
     dispatch({ type: 'SHOW_ALL' });
   };
@@ -134,7 +140,7 @@ const TodoList = ({ todos }) => (
 );
 
 const TodoItem = ({ todo }) => {
-  const dispatch = useContext(TodoContext);
+  const dispatch = useContext(DispatchContext);
 
   const handleChange = () =>
     dispatch({
@@ -157,7 +163,7 @@ const TodoItem = ({ todo }) => {
 };
 
 const AddTodo = () => {
-  const dispatch = useContext(TodoContext);
+  const dispatch = useContext(DispatchContext);
 
   const [task, setTask] = useState('');
 
