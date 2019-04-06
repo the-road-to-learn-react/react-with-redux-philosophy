@@ -32,9 +32,38 @@ const filterReducer = (state, action) => {
   }
 };
 
+const todoReducer = (state, action) => {
+  switch (action.type) {
+    case 'DO_TODO':
+      return state.map(todo => {
+        if (todo.id === action.id) {
+          return { ...todo, complete: true };
+        } else {
+          return todo;
+        }
+      });
+    case 'UNDO_TODO':
+      return state.map(todo => {
+        if (todo.id === action.id) {
+          return { ...todo, complete: false };
+        } else {
+          return todo;
+        }
+      });
+    case 'ADD_TODO':
+      return state.concat({
+        task: action.task,
+        id: uuid(),
+        complete: false,
+      });
+    default:
+      throw new Error();
+  }
+};
+
 const App = () => {
   const [filter, dispatchFilter] = useReducer(filterReducer, 'ALL');
-  const [todos, setTodos] = useState(initalTodos);
+  const [todos, dispatchTodos] = useReducer(todoReducer, initalTodos);
   const [task, setTask] = useState('');
 
   const handleShowAll = () => {
@@ -65,16 +94,11 @@ const App = () => {
     return false;
   });
 
-  const handleChangeCheckbox = id => {
-    setTodos(
-      todos.map(todo => {
-        if (todo.id === id) {
-          return { ...todo, complete: !todo.complete };
-        } else {
-          return todo;
-        }
-      })
-    );
+  const handleChangeCheckbox = todo => {
+    dispatchTodos({
+      type: todo.complete ? 'UNDO_TODO' : 'DO_TODO',
+      id: todo.id,
+    });
   };
 
   const handleChangeInput = event => {
@@ -83,7 +107,7 @@ const App = () => {
 
   const handleSubmit = event => {
     if (task) {
-      setTodos(todos.concat({ id: uuid(), task, complete: false }));
+      dispatchTodos({ type: 'ADD_TODO', task });
     }
 
     setTask('');
@@ -112,7 +136,7 @@ const App = () => {
               <input
                 type="checkbox"
                 checked={todo.complete}
-                onChange={() => handleChangeCheckbox(todo.id)}
+                onChange={() => handleChangeCheckbox(todo)}
               />
               {todo.task}
             </label>
