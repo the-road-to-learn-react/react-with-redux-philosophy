@@ -60,7 +60,7 @@ const todoReducer = (state, action) => {
     case 'ADD_TODO':
       return state.concat({
         task: action.task,
-        id: uuid(),
+        id: action.id,
         complete: false,
       });
     default:
@@ -169,7 +169,7 @@ const AddTodo = () => {
 
   const handleSubmit = event => {
     if (task) {
-      dispatch({ type: 'ADD_TODO', task });
+      dispatch({ type: 'ADD_TODO', task, id: uuid() });
     }
 
     setTask('');
