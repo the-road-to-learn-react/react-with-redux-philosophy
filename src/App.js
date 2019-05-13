@@ -68,33 +68,40 @@ const todoReducer = (state, action) => {
   }
 };
 
-const App = () => {
-  const [filter, dispatchFilter] = useReducer(filterReducer, 'ALL');
-  const [todos, dispatchTodos] = useReducer(
-    todoReducer,
-    initialTodos
+const useCombinedReducer = useReducers => {
+  // Global State
+  const state = Object.keys(useReducers).reduce(
+    (acc, key) => ({ ...acc, [key]: useReducers[key][0] }),
+    {}
   );
 
   // Global Dispatch Function
   const dispatch = action =>
-    [dispatchTodos, dispatchFilter].forEach(fn => fn(action));
+    Object.keys(useReducers)
+      .map(key => useReducers[key][1])
+      .forEach(fn => fn(action));
 
-  // Global State
-  const state = {
-    filter,
-    todos,
-  };
+  return [state, dispatch];
+};
 
-  const filteredTodos = state.todos.filter(todo => {
-    if (state.filter === 'ALL') {
+const App = () => {
+  const [state, dispatch] = useCombinedReducer({
+    filter: useReducer(filterReducer, 'ALL'),
+    todos: useReducer(todoReducer, initialTodos),
+  });
+
+  const { filter, todos } = state;
+
+  const filteredTodos = todos.filter(todo => {
+    if (filter === 'ALL') {
       return true;
     }
 
-    if (state.filter === 'COMPLETE' && todo.complete) {
+    if (filter === 'COMPLETE' && todo.complete) {
       return true;
     }
 
-    if (state.filter === 'INCOMPLETE' && !todo.complete) {
+    if (filter === 'INCOMPLETE' && !todo.complete) {
       return true;
     }
 
