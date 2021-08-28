@@ -4,7 +4,7 @@ import React, {
   useContext,
   createContext,
 } from 'react';
-import uuid from 'uuid/v4';
+import { v4 as uuidv4 } from 'uuid';
 
 import useCombinedReducers from 'use-combined-reducers';
 
@@ -12,17 +12,17 @@ const DispatchContext = createContext(null);
 
 const initialTodos = [
   {
-    id: uuid(),
+    id: uuidv4(),
     task: 'Learn React',
     complete: true,
   },
   {
-    id: uuid(),
+    id: uuidv4(),
     task: 'Learn Firebase',
     complete: true,
   },
   {
-    id: uuid(),
+    id: uuidv4(),
     task: 'Learn GraphQL',
     complete: false,
   },
@@ -171,7 +171,7 @@ const AddTodo = () => {
 
   const handleSubmit = event => {
     if (task) {
-      dispatch({ type: 'ADD_TODO', task, id: uuid() });
+      dispatch({ type: 'ADD_TODO', task, id: uuidv4() });
     }
 
     setTask('');
